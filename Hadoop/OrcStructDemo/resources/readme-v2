@@ -1,0 +1,68 @@
+###########################################################
+#2015-03-11 v2
+*开放OrcStruct构造函数权限
+
+###OrcStruct
+--------------------------------
+  OrcStruct(int children) {
+    fields = new Object[children];
+  }
+--------------------------------
+==>
+--------------------------------
+  public OrcStruct(int children) {
+    fields = new Object[children];
+  }
+--------------------------------
+
+--------------------------------
+  Object getFieldValue(int fieldIndex) {
+    return fields[fieldIndex];
+  }
+--------------------------------
+==>
+--------------------------------
+  public Object getFieldValue(int fieldIndex) {
+    return fields[fieldIndex];
+  }
+--------------------------------
+
+--------------------------------
+  void setFieldValue(int fieldIndex, Object value) {
+    fields[fieldIndex] = value;
+  }
+--------------------------------
+==>
+--------------------------------
+  public void setFieldValue(int fieldIndex, Object value) {
+    fields[fieldIndex] = value;
+  }
+--------------------------------
+
+###OrcNewInputFormat
+--------------------------------
+  private static class OrcRecordReader
+--------------------------------
+==>
+--------------------------------
+  public static class OrcRecordReader
+--------------------------------
+
+###OrcNewInputFormat.OrcRecordReader
+*add code
+--------------------------------
+    public int getNumColumns() {
+    	return this.numColumns;
+    }
+--------------------------------
+
+--------------------------------
+    OrcRecordReader(Reader file, Configuration conf,
+                    long offset, long length) throws IOException {
+--------------------------------
+==>
+--------------------------------
+    public OrcRecordReader(Reader file, Configuration conf,
+                    long offset, long length) throws IOException {
+--------------------------------
+

@@ -3,6 +3,13 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+#ignore Eclipse
+Hadoop/OrcStructDemo/bin
+Hadoop/OrcStructDemo/.*
+Hadoop/MyHadoop/bin
+Hadoop/MyHadoop/.*
+
+
 # Package Files #
 *.jar
 *.war
