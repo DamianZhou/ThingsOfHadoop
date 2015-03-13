@@ -114,6 +114,10 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
       }
     }
     
+    /**
+     * 获取分片的中的列数
+     * @return
+     */
     public int getNumColumns() {
     	return this.numColumns;
     }

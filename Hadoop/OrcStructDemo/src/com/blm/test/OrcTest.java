@@ -39,9 +39,9 @@ import com.blm.orc.Reader;
  *
  */
 public class OrcTest {
-	
+
 	String time = new SimpleDateFormat("yyyy-MM-ddHHmmss").format(new Date());
-	
+
 	/**
 	 * 遍历指定文件一定范围内的数据
 	 */
@@ -50,7 +50,7 @@ public class OrcTest {
 		Configuration conf = new Configuration(); 
 		Path fileIn = new Path(input);
 		Reader r = OrcFile.createReader(FileSystem.get(URI.create(input), conf), fileIn);
-		
+
 		OrcRecordReader reader = new OrcRecordReader(r, conf, 0, 753); //0-300表示orcfile长度
 		if ( reader!=null ) {
 			//获得文件的列数
@@ -60,37 +60,38 @@ public class OrcTest {
 			OrcStruct data = reader.getCurrentValue(); 
 			System.out.println("fields: " + data.getNumFields());
 			for(int i = 0; i < data.getNumFields(); i++){ 
-				System.out.println("============" +i+ data.getFieldValue(i)); 
+				System.out.print(data.getFieldValue(i)+" , "); 
 			}
+			System.out.println("");
 		}
 	}
-	
-	
+
+
 	/**
 	 * 生成指定路径的orc文件
 	 */
 	public void createOrcFile() throws IOException, InterruptedException {
-//		String input = "/test/orcOut.orc"; 
-//		Configuration conf = new Configuration(); 
-//		Path fileIn = new Path(input);	
-//		
-//		for( int i = 0; i < 1000; i++ ) {
-//			
-//		}
-		
-		
+		//		String input = "/test/orcOut.orc"; 
+		//		Configuration conf = new Configuration(); 
+		//		Path fileIn = new Path(input);	
+		//		
+		//		for( int i = 0; i < 1000; i++ ) {
+		//			
+		//		}
+
+
 	}
-	
-	
+
+
 	public void testTextMR() throws IOException, InterruptedException, ClassNotFoundException {
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, "testTextMR");
-		
-//		FileSystem fs = FileSystem.get(conf);
-//		if ( fs.exists(new Path("hdfs://192.168.129.63:9000/test/ttt2.txt")) ) {
-//			fs.delete(new Path("hdfs://192.168.129.63:9000/test/ttt2.txt"), true);
-//		}
-		
+
+		//		FileSystem fs = FileSystem.get(conf);
+		//		if ( fs.exists(new Path("hdfs://192.168.129.63:9000/test/ttt2.txt")) ) {
+		//			fs.delete(new Path("hdfs://192.168.129.63:9000/test/ttt2.txt"), true);
+		//		}
+
 		job.setJarByClass(OrcTest.class);
 		//配置map和reduce
 		job.setMapperClass(TestMapper.class);
@@ -106,19 +107,26 @@ public class OrcTest {
 		FileOutputFormat.setOutputPath(job, new Path("hdfs://192.168.129.63:9000/test/tttout"+time));
 		System.exit(job.waitForCompletion(true) ? 0 : 1);  //执行job
 		System.out.println("ok");
-		
+
 	}
-	
-	
+
+	/**
+	 * text -> ORC 的MR demo
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws ClassNotFoundException
+	 * 
+	 * @author LiaoZhuo
+	 */
 	public void testOrcMR() throws IOException, InterruptedException, ClassNotFoundException {
 		Configuration conf = new Configuration();
 		Job job = new Job(conf, "word count");
-		
-//		FileSystem fs = FileSystem.get(conf);
-//		if ( fs.exists(new Path("/test/tout.orc")) ) {
-//			fs.delete(new Path("/test/tout.orc"), true);
-//		}
-		
+
+		//		FileSystem fs = FileSystem.get(conf);
+		//		if ( fs.exists(new Path("/test/tout.orc")) ) {
+		//			fs.delete(new Path("/test/tout.orc"), true);
+		//		}
+
 		job.setJarByClass(OrcTest.class);
 		//配置map和reduce
 		job.setMapperClass(TestOrcMapper.class);
@@ -134,14 +142,63 @@ public class OrcTest {
 		//配置输入输出路径
 		FileInputFormat.addInputPath(job, new Path("hdfs://192.168.129.63:9000/test/ttt1.txt"));
 
-        OrcNewOutputFormat.setCompressOutput(job,true);
-        OrcNewOutputFormat.setOutputPath(job,new Path("hdfs://192.168.129.63:9000/test/torc"+time));
-		
+		OrcNewOutputFormat.setCompressOutput(job,true);
+		OrcNewOutputFormat.setOutputPath(job,new Path("hdfs://192.168.129.63:9000/test/torc"+time));
+
 		System.exit(job.waitForCompletion(true) ? 0 : 1);  //执行job
 		System.out.println("ok");
-		
 	}
-	
+
+	/**
+	 * ORC->text 的 MR demo
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws ClassNotFoundException
+	 * 
+	 * @author DamianZhou
+	 */
+	public void testGetOrcMR() throws IOException, InterruptedException, ClassNotFoundException {
+		Configuration conf = new Configuration();
+
+		//无效：为控制压缩格式
+		//		conf.setBoolean("mapred.output.compress", false);  
+
+
+		Job job = new Job(conf, "word count");
+
+		//		FileSystem fs = FileSystem.get(conf);
+		//		if ( fs.exists(new Path("/test/tout.orc")) ) {
+		//			fs.delete(new Path("/test/tout.orc"), true);
+		//		}
+
+		job.setJarByClass(OrcTest.class);
+
+		//配置map和reduce
+		job.setMapperClass(TestGetOrcMapper.class);
+		job.setReducerClass(TestGetOrcReducer.class);
+
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+
+		//配置输出的<key,value>
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+
+		//配置inputformat，outputformat
+		job.setInputFormatClass(OrcNewInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+
+		//配置输入输出路径
+		FileInputFormat.addInputPath(job, new Path("hdfs://192.168.129.63:9000/test/tout.orc/part-r-00000"));
+
+		OrcNewOutputFormat.setCompressOutput(job,true);
+		OrcNewOutputFormat.setOutputPath(job,new Path("hdfs://192.168.129.63:9000/test/torc"+time));
+
+		System.exit(job.waitForCompletion(true) ? 0 : 1);  //执行job
+		System.out.println("ok");
+	}
+
+
 
 	/**
 	 * @param args
@@ -150,10 +207,11 @@ public class OrcTest {
 		// TODO Auto-generated method stub
 		OrcTest test = new OrcTest();
 		try{
-//			test.testTextMR();
-			test.testOrcMR();
-//			test.readOrcFile();
-			
+			//			test.testTextMR();
+			//			test.testOrcMR();
+			//			test.readOrcFile();
+			test.testGetOrcMR(); 
+
 		} catch ( Exception ex ) {
 			ex.printStackTrace();
 		}
