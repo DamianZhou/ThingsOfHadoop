@@ -100,8 +100,8 @@ public class WordCount {
 //						System.err.println("Usage: wordcount <in> [<in>...] <out>");
 //						System.exit(2);		
 						String time = new SimpleDateFormat("yyyy-MM-ddHHmmss").format(new Date());
-						otherArgs[0]="hdfs://192.168.129.63:9000/tmp_data/testin";
-						otherArgs[1]="hdfs://192.168.129.63:9000/tmp_data/testout"+time;
+						otherArgs[0]="hdfs://192.168.129.63:9000/word_in";
+						otherArgs[1]="hdfs://192.168.129.63:9000/word_out/"+time;
 //						otherArgs[0]="tmp_data/testin";
 //						otherArgs[1]="tmp_data/testout"+time;
 //					}

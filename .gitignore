@@ -5,9 +5,8 @@
 
 #ignore Eclipse
 Hadoop/OrcStructDemo/bin
-Hadoop/OrcStructDemo/.*
 Hadoop/MyHadoop/bin
-Hadoop/MyHadoop/.*
+
 
 
 # Package Files #
