@@ -24,7 +24,9 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 
 
+
 import com.blm.orc.OrcFile;
+import com.blm.orc.OrcInputFormat;
 import com.blm.orc.OrcNewInputFormat;
 import com.blm.orc.OrcNewInputFormat.OrcRecordReader;
 import com.blm.orc.OrcNewOutputFormat;
@@ -56,6 +58,9 @@ public class OrcTest {
 			//获得文件的列数
 			System.out.println("========record counts : " + reader.getNumColumns()); 
 		}
+		
+//		read
+		
 		while( reader.nextKeyValue() ) { 
 			OrcStruct data = reader.getCurrentValue(); 
 			System.out.println("fields: " + data.getNumFields());

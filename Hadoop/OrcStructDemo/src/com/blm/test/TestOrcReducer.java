@@ -21,7 +21,6 @@ public class TestOrcReducer extends Reducer<Text, IntWritable, NullWritable, Wri
 
     //Define the struct which will represent each row in the ORC file
     private final String typeString = "struct<key_word:string,random_id:int>";
-
     private final TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
     private final ObjectInspector oip = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);	
 	

@@ -312,8 +312,8 @@ final class ReaderImpl implements Reader {
       footerMetaData = extractMetaInfoFromFooter(fs, path,
           options.getMaxLength());
     }
-    MetaInfoObjExtractor rInfo =
-        new MetaInfoObjExtractor(footerMetaData.compressionType,
+    MetaInfoObjExtractor rInfo =  new MetaInfoObjExtractor(
+    							 footerMetaData.compressionType,
                                  footerMetaData.bufferSize,
                                  footerMetaData.metadataSize,
                                  footerMetaData.footerBuffer

@@ -36,107 +36,116 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 
-/** An InputFormat for ORC files. Keys are meaningless,
- * value is the OrcStruct object */
+/** An InputFormat for ORC files. 
+ * Keys are meaningless,
+ * value is the OrcStruct object 
+ */
 public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
-  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
-  private static final String CLASS_NAME = ReaderImpl.class.getName();
+	private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+	private static final String CLASS_NAME = ReaderImpl.class.getName();
 
-  @Override
-  public RecordReader<NullWritable, OrcStruct> createRecordReader(
-      InputSplit inputSplit, TaskAttemptContext context)
-      throws IOException, InterruptedException {
-    FileSplit fileSplit = (FileSplit) inputSplit;
-    Path path = fileSplit.getPath();
-    Configuration conf = ShimLoader.getHadoopShims()
-        .getConfiguration(context);
-    return new OrcRecordReader(OrcFile.createReader(path,
-                                                   OrcFile.readerOptions(conf)),
-        ShimLoader.getHadoopShims().getConfiguration(context),
-        fileSplit.getStart(), fileSplit.getLength());
-  }
+	@Override
+	public RecordReader<NullWritable, OrcStruct> createRecordReader( InputSplit inputSplit, TaskAttemptContext context) 	throws IOException, InterruptedException {
+		FileSplit fileSplit = (FileSplit) inputSplit;
+		Path path = fileSplit.getPath();
+		Configuration conf = ShimLoader.getHadoopShims().getConfiguration(context);
+		return new OrcRecordReader(
+				OrcFile.createReader(path,OrcFile.readerOptions(conf)),	ShimLoader.getHadoopShims().getConfiguration(context),
+				fileSplit.getStart(), 
+				fileSplit.getLength()
+				);
+	}
 
-  public static class OrcRecordReader
-    extends RecordReader<NullWritable, OrcStruct> {
-    private final com.blm.orc.RecordReader reader;
-    private final int numColumns;
-    OrcStruct value;
-    private float progress = 0.0f;
+	public static class OrcRecordReader extends RecordReader<NullWritable, OrcStruct> {
+		private final com.blm.orc.RecordReader reader;
+		private final int numColumns;
+		OrcStruct value;
+		private float progress = 0.0f;
 
-    public OrcRecordReader(Reader file, Configuration conf,long offset, long length) throws IOException {
-      List<OrcProto.Type> types = file.getTypes();
-      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
-      value = new OrcStruct(numColumns);
-      this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
-          length);
-    }
+		/**
+		 * 生成ORCRecordReader
+		 * @param Reader file
+		 * @param Configuration conf
+		 * @param offset 起始位置
+		 * @param length 长度
+		 * @throws IOException
+		 */
+		public OrcRecordReader(Reader file, Configuration conf,long offset, long length) throws IOException {
+			List<OrcProto.Type> types = file.getTypes();
+			numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+			value = new OrcStruct(numColumns);
+			this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,length);
+		}
 
-    @Override
-    public void close() throws IOException {
-      reader.close();
-    }
-
-
-    @Override
-    public NullWritable getCurrentKey() throws IOException,
-        InterruptedException {
-      return NullWritable.get();
-    }
+		@Override
+		public void close() throws IOException {
+			reader.close();
+		}
 
 
-    @Override
-    public OrcStruct getCurrentValue() throws IOException,
-        InterruptedException {
-      return value;
-    }
+		@Override
+		public NullWritable getCurrentKey() throws IOException,
+		InterruptedException {
+			return NullWritable.get();
+		}
 
 
-    @Override
-    public float getProgress() throws IOException, InterruptedException {
-      return progress;
-    }
+		@Override
+		public OrcStruct getCurrentValue() throws IOException,
+		InterruptedException {
+			return value;
+		}
 
 
-    @Override
-    public void initialize(InputSplit split, TaskAttemptContext context)
-        throws IOException, InterruptedException {
-    }
+		@Override
+		public float getProgress() throws IOException, InterruptedException {
+			return progress;
+		}
 
 
-    @Override
-    public boolean nextKeyValue() throws IOException, InterruptedException {
-      if (reader.hasNext()) {
-        reader.next(value);
-        progress = reader.getProgress();
-        return true;
-      } else {
-        return false;
-      }
-    }
-    
-    /**
-     * 获取分片的中的列数
-     * @return
-     */
-    public int getNumColumns() {
-    	return this.numColumns;
-    }
-    
-  }
+		@Override
+		public void initialize(InputSplit split, TaskAttemptContext context)
+				throws IOException, InterruptedException {
+		}
 
-  @Override
-  public List<InputSplit> getSplits(JobContext jobContext)
-      throws IOException, InterruptedException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    List<OrcSplit> splits =
-        OrcInputFormat.generateSplitsInfo(ShimLoader.getHadoopShims()
-        .getConfiguration(jobContext));
-    List<InputSplit> result = new ArrayList<InputSplit>(splits.size());
-    for(OrcSplit split: splits) {
-      result.add(new OrcNewSplit(split));
-    }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
-    return result;
-  }
+
+		@Override
+		public boolean nextKeyValue() throws IOException, InterruptedException {
+			if (reader.hasNext()) {
+				reader.next(value);
+				progress = reader.getProgress();
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		/**
+		 * 获取分片的中的列数
+		 * @return
+		 */
+		public int getNumColumns() {
+			return this.numColumns;
+		}
+
+	}
+
+	@Override
+	public List<InputSplit> getSplits(JobContext jobContext) throws IOException, InterruptedException {
+		perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+		
+		List<OrcSplit> splits =
+				OrcInputFormat.generateSplitsInfo(
+						ShimLoader.getHadoopShims().getConfiguration(jobContext)
+				);
+		
+		List<InputSplit> result = new ArrayList<InputSplit>(splits.size());
+		
+		for(OrcSplit split: splits) {
+			result.add(new OrcNewSplit(split));
+		}
+		perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_SPLITS);
+		return result;
+	}
 
 }

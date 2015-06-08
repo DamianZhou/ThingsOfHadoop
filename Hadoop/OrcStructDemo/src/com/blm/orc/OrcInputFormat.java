@@ -81,9 +81,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 /**
  * A MapReduce/Hive input format for ORC files.
  * <p>
- * This class implements both the classic InputFormat, which stores the rows
- * directly, and AcidInputFormat, which stores a series of events with the
- * following schema:
+ * This class implements both the classic InputFormat, which stores the rows directly, 
+ * and AcidInputFormat, which stores a series of events with the following schema:
  * <pre>
  *   class AcidEvent&lt;ROW&gt; {
  *     enum ACTION {INSERT, UPDATE, DELETE}
@@ -214,10 +213,9 @@ CombineHiveInputFormat.AvoidSplitCombination {
 		return isOriginal ? 0 : (OrcRecordUpdater.ROW + 1);
 	}
 
-	public static RecordReader createReaderFromFile(Reader file,
-			Configuration conf,
-			long offset, long length
-			) throws IOException {
+	public static RecordReader createReaderFromFile(Reader file, Configuration conf,
+			long offset, long length ) throws IOException {
+		
 		Reader.Options options = new Reader.Options().range(offset, length);
 		boolean isOriginal =
 				!file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
